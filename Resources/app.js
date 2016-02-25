@@ -90,7 +90,7 @@ function createMemoriesDirectory(){
 }
 
 //auxiliar function to put images or other media in the emulator. TO BE REMOVED!
-/*function aux(){
+function aux(){
   var immagine = Ti.Filesystem.getFile('farfalla.jpg');
   Ti.Media.saveToPhotoGallery(immagine, {
     success:function(e){
@@ -100,4 +100,4 @@ function createMemoriesDirectory(){
       alert("Failed!");
     }
   });
-}*/
+}
