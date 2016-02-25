@@ -55,6 +55,6 @@
         <target device="mobileweb">false</target>
         <target device="windows">false</target>
     </deployment-targets>
-    <sdk-version>5.1.2.GA</sdk-version>
+    <sdk-version>5.2.0.GA</sdk-version>
     <property name="appc-app-id" type="string">56ab7f2953656b9f36981bdd</property>
 </ti:app>
