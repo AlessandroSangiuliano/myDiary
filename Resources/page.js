@@ -8,9 +8,16 @@ var date_label;
 var top_view, container;
 var prev_button, next_button, done_button, add_button;
 var image_container, another_ann_area;
-var track_pictures = [], track_text_areas = [];
+var track_pictures, track_text_areas;
+var gallery_path, gallery_folder;
+var did_read, mem_index;
 
 function newPage(){
+  gallery_path = Ti.Filesystem.applicationDataDirectory + "/Gallery/";
+  gallery_folder = Ti.Filesystem.getFile(gallery_path);
+  track_pictures = [];
+  track_text_areas = [];
+  did_read = false;
 
   page_window = Titanium.UI.createWindow({
     backgroundColor:'#D8C10F',
@@ -52,7 +59,6 @@ function newPage(){
         action_bar.setDisplayHomeAsUp(true);
         action_bar.onHomeIconItemSelected = function(){
           page_window.close();
-          //page_window.removeEventListener('open', eventHandler);
           newPage.prototype.dealloc();
         };
       }
@@ -95,6 +101,7 @@ function newPage(){
         if (e.mediaType == Ti.Media.MEDIA_TYPE_PHOTO) {
           image_container = newPage.prototype.createImageContainer();
           image_container.setImage(e.media);
+          //Ti.API.info('Tipo di e.media: ' + e.media + " path: " + e.media.file);
           another_ann_area = newPage.prototype.createAnnotationArea();
           track_pictures.push(image_container);
           track_text_areas.push(another_ann_area);
@@ -106,26 +113,29 @@ function newPage(){
       }
     });
   });
-//implementare spostamento immagini nella directory Gallery
+
   done_button.addEventListener('click', eventHandler = function(e){
-    saveToJSON(annotation_area.getValue());
     var image;
+
+    if(!did_read)
+      saveToJSON(annotation_area.getValue());
+
     if(track_text_areas.length != 0){
       for (var i = 0; i < track_text_areas.length; i++) {
-        if (track_pictures.length >= i) {
-          image = track_pictures[i].getImage().getFile();
+
+        if(did_read)
+          i = mem_index;
+
+        if (track_pictures[i] != undefined) {
+          image = track_pictures[i].image.file;
           saveToJSON(track_text_areas[i].getValue(), image.getName());
-          image.move(Ti.Filesystem.applicationDataDirectory+"/Gallery/" + image.getName());
+          if (!imageExists(image.getName())) {
+            image.move(gallery_path + image.getName());
+          }
         }
         else {
-          saveToJSON(track_text_areas[i].getValue(),null);
+          saveToJSON(track_text_areas[i].getValue());
         }
-      }
-    }
-    //codice di debug.
-    if (track_pictures.length != 0) {
-      for (var i = 0; i < track_pictures.length; i++) {
-        Ti.API.info(track_pictures[i].getImage().getFile().getName());
       }
     }
     newPage.prototype.readFromJSON();
@@ -152,6 +162,8 @@ newPage.prototype.getPageWindow = function(){
 newPage.prototype.dealloc = function(){
   page_window.removeEventListener('open', eventHandler);
   top_view.remove(date_label);
+  track_pictures = null;
+  track_text_areas = null;
   date_label = null;
   top_view.remove(prev_button);
   prev_button = null;
@@ -179,7 +191,7 @@ newPage.prototype.setTextInSpecificArea = function(an_annotation_area, text){
 };
 
 newPage.prototype.setImage = function(an_image_container, an_image){
-  an_image_container.setImage(an_image);
+  an_image_container.setImage(an_image.read());
   track_pictures.push(an_image_container);
 };
 
@@ -195,35 +207,35 @@ newPage.prototype.setDateLabel = function(date_string){
 };
 
 saveToJSON = function(text, image_name){
-  var path = "Memories/" + date_label.getText();
-  var file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, path);
+  var path = Ti.Filesystem.applicationDataDirectory + "Memories/" + date_label.getText();
+  var file = Ti.Filesystem.getFile(path);
   var json_object;
+
+  if (file.exists() === false) {
+    file.write('{"memories":[]}');
+  }
+
   if (isIOS()) {
     file.setRemoteBackup(false);
   }
-  if (file.exists() === false) {
-    //file.createFile();
-    file.write('{"memories":[]}');
-  }
+
   json_object = JSON.parse(file.read().text);
   json_object.memories.push({"note":text, "image":image_name});
   var stringed = JSON.stringify(json_object);
-  file.write(stringed);
+  file.write(stringed,false);
+  json_object = null;
+  stringed = null;
 };
 
 newPage.prototype.readFromJSON = function(){
   var path = "Memories/" + date_label.getText();
   var file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, path);
-  var json_object;
+  var json_obj;
 
-  Ti.API.info('LeL:\n' + file.read().text);
-  json_object = JSON.parse(file.read().text);
-  /*for (var i = 0; i < json_object.memories.length; i++) {
-    Ti.API.info('LoL: ' + json_object.memories[i].note);
-  }*/
-  //var dir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "Memories");
-  //Ti.API.info('Cartelle: ' + dir.getDirectoryListing());
-  return json_object;
+  json_obj = JSON.parse(file.read().text);
+  did_read = true;
+  mem_index = json_obj.memories.length - 1;
+  return json_obj;
 };
 
 newPage.prototype.createImageContainer = function(){
@@ -240,5 +252,21 @@ newPage.prototype.createAnnotationArea = function(){
     color:'black'
   });
 };
+
+imageExists = function(an_image_name){
+  var gallery_content = gallery_folder.getDirectoryListing();
+
+  if (gallery_content.length == 0) {
+    return false;
+  }
+
+  for (var i = 0; i < gallery_content.length; i++){
+    if(an_image_name === gallery_content[i])
+      return true;
+    else{
+      return false;
+    }
+  }
+}
 
 module.exports = newPage;

@@ -79,7 +79,6 @@ readStoredMemories = function(){
 
   dir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "Memories");
   saved_memories = dir.getDirectoryListing();
-  Ti.API.info('Ricordi: ' + dir.getDirectoryListing());
   for (var i = 0; i < saved_memories.length; i++) {
     Ti.API.info(saved_memories[i]);
   }
@@ -103,24 +102,28 @@ memoriesIndex.prototype.dealloc = function(){
 
 handleMemorySelection = function(row, a_navigation_group){
   var page = new pageModule;
-  var json, stringified;
+  var json;
   var image_container, annotation_area;
   var image;
 
   page.setDateLabel(row.title);
-  page.getPageWindow().open();
+  page.getPageWindow().open();//check anche per ios
   json = page.readFromJSON();
   page.setText(json.memories[0].note);
   for (var i = 1; i < json.memories.length; i++) {
     annotation_area = page.createAnnotationArea();
     page.setTextInSpecificArea(annotation_area, json.memories[i].note);
-    if (json.memories[i].image != "null"){
+    if (json.memories[i].image != undefined){
       image = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "Gallery/" + json.memories[i].image);
       image_container = page.createImageContainer();
       page.setImage(image_container, image);
     }
     page.buildContainerView(image_container, annotation_area);
   }
+  image = null;
+  image_container = null;
+  annotation_area = null;
+  json = null;
 };
 
 module.exports = memoriesIndex;
