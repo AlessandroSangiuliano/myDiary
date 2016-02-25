@@ -30,7 +30,6 @@ function loginManager(){
     });
   }
 
-
   credential_view = Ti.UI.createView({
     layout:'vertical',
     top:200,
@@ -135,6 +134,8 @@ function loginManager(){
     }
     digest_password = criptPassword(user_password_box.getValue());
     loginManager.prototype.storeCredential();
+    //in futuro creerò una finestra apposita per l'inserimento delle credenzialo come anche l'email
+    alert('User created!');
   });
 
   credential_view.add(user_id_box);
