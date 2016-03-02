@@ -4,6 +4,7 @@
  */
 var pageModule = require('page');
 var indexModule = require('memories_index');
+var gallery_module = require('gallery');
 Ti.include('helper.js');
 
 var activity_window;
@@ -14,6 +15,8 @@ function activityMenu(a_navigation_group){
   var add_mem_row;
   var table_rows = [];
   var read_mem_row;
+  var pic_show_row;
+
   /*a questo punto, questo check è superfluo. trasformare in: nav_group = a_navigation_group;
   di conseguenza se a_navigation_group è null lo sarà anche nav_group, altrimenti nav_group
   punterà all'oggetto di a_navigation_group!*/
@@ -54,14 +57,25 @@ function activityMenu(a_navigation_group){
     backgroundSelectedColor:'#03C0EF'
   });
 
+  pic_show_row = Ti.UI.createTableViewRow({
+    title:'Watch your photo gallery...',
+    color:'black',
+    height:35,
+    width:Ti.UI.FILL,
+    backgroundColor:'#ebe5e0',
+    backgroundSelectedColor:'#03C0EF'
+  });
+
   table_rows.push(add_memory_row);
   table_rows.push(read_mem_row);
+  table_rows.push(pic_show_row);
   activity_table.setData(table_rows);
   activity_window.add(activity_table);
   //activity_window.open();
   //attenzione ai seguenti null-fy
   add_memory_row = null;
   read_mem_row = null;
+  pic_show_row = null;
   table_rows = null;
 
   activity_table.addEventListener('click', eventHandler = function(e){
@@ -77,7 +91,7 @@ activityMenu.prototype.dealloc = function(){
   nav_group = null;
   activity_window.remove(activity_table);
   activity_table = null;
-  
+
   //last thing to null-fy
   activity_window = null;
 };
@@ -97,6 +111,13 @@ handleActivitySelection = function(index, a_navigation_group){
     case 1:
       var index_list = new indexModule(a_navigation_group); //memory_leak
       isAndroid() ? index_list.getWindow().open() : a_navigation_group.openWindow(index_list.getWindow());
+      break;
+    case 2:
+      var gallery_entry = new gallery_module;
+      Ti.API.info('LoL: ' + gallery_entry.getWindow());
+      gallery_entry.buildGallery();
+      isAndroid() ? gallery_entry.getWindow().open() : a_navigation_group.openWindow(gallery_entry.getWindow());
+      break;
     default:
 
   }
