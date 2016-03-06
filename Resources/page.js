@@ -115,7 +115,7 @@ function newPage(){
   });
 
   done_button.addEventListener('click', eventHandler = function(e){
-    var image;
+    var image, image_name;
 
     if(!did_read)
       saveToJSON(annotation_area.getValue());
@@ -123,14 +123,35 @@ function newPage(){
     if(track_text_areas.length != 0){
       for (var i = 0; i < track_text_areas.length; i++) {
 
-        if(did_read)
+        if(did_read){
           i = mem_index;
+          did_read = false;
+        }
 
         if (track_pictures[i] != undefined) {
-          image = track_pictures[i].image.file;
-          saveToJSON(track_text_areas[i].getValue(), image.getName());
-          if (!imageExists(image.getName())) {
-            image.move(gallery_path + image.getName());
+          if (isAndroid()){
+            image = track_pictures[i].image.file;
+            image_name = image.getName();
+          }
+          else {
+            image = track_pictures[i].image;
+            Ti.API.info('Immagine: ' + image);
+            do {
+              image_name = idGenerator(image.getMimeType().substring(6));
+            } while (imageExists(image_name));
+            //image = Ti.Filesystem.getFile(gallery_path + image_name);
+          }
+          saveToJSON(track_text_areas[i].getValue(), image_name);
+          if (!imageExists(image_name)) {
+            Ti.API.info('Chi sono? ' + i + " " + image + " il mio nome: " + image_name);
+            if (isAndroid()) {
+              image.move(gallery_path + image_name);
+            }
+            else {
+              var new_image = Ti.Filesystem.getFile(gallery_path + image_name);
+              if(new_image.write(image) === false)
+                alert("Error while moving the image");
+            }
           }
         }
         else {
@@ -254,6 +275,7 @@ newPage.prototype.createAnnotationArea = function(){
 };
 
 imageExists = function(an_image_name){
+  var exists = false;
   var gallery_content = gallery_folder.getDirectoryListing();
 
   if (gallery_content.length == 0) {
@@ -262,11 +284,11 @@ imageExists = function(an_image_name){
 
   for (var i = 0; i < gallery_content.length; i++){
     if(an_image_name === gallery_content[i])
-      return true;
-    else{
-      return false;
-    }
+      exists = true;
+    else
+      exists = false;
   }
+  return exists;
 }
 
 module.exports = newPage;
