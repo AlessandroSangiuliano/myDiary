@@ -1,4 +1,5 @@
-//helper file for common functions.
+//helper file for common functions and "macros".
+var APP_NAME = "myDiary";
 
 isAndroid = function(){
   return (Ti.Platform.name === 'android');
@@ -25,6 +26,13 @@ createHorizontalDivisor = function(_width, _height){
     backgroundColor:"#03C0EF"
   });
 };
+
+idGenerator = function(a_mime_type){
+	var id_number = Math.floor(Math.random() * 10000 + 1);
+	var pic_name = APP_NAME + "-" + id_number + "." + a_mime_type;
+	Ti.API.info('tipotpo: ' + pic_name);
+	return pic_name;
+}
 
 /*createActionBarWithEvenListener(win, an_action_bar){
   win.addEventListener('open', eventHandler = function(e){
