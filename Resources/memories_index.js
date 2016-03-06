@@ -73,9 +73,9 @@ readStoredMemories = function(){
   var saved_memories;
   var dir;
 
-  if (isIOS()) {
+  /*if (isIOS()) {
     file.setRemoteBackup(false);
-  }
+  }*/
 
   dir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "Memories");
   saved_memories = dir.getDirectoryListing();
@@ -107,7 +107,7 @@ handleMemorySelection = function(row, a_navigation_group){
   var image;
 
   page.setDateLabel(row.title);
-  page.getPageWindow().open();//check anche per ios
+  isAndroid() ? page.getPageWindow().open() : a_navigation_group.openWindow(page.getPageWindow());
   json = page.readFromJSON();
   page.setText(json.memories[0].note);
   for (var i = 1; i < json.memories.length; i++) {
