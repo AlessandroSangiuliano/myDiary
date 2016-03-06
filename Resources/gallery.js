@@ -52,21 +52,23 @@ var Gallery = (function(){
     var image_container;
     var file;
     var vertical_view, horizontal_view;
+    var row = [];
 
-    vertical_view = Ti.UI.createScrollView({
+    horizontal_view = Ti.UI.createScrollView({
       width:Ti.UI.FILL,
-      height:'100'
+      height:'100',
+      layout:'horizontal'
     });
     this.rows_num = 1;
     for (var i = 0; i < pic_num; i++) {
       if ((i%3) != 0) {
-        file = Ti.Filesystem.getFile(gallery_path + pictures[i]);
+        file = Ti.Filesystem.getFile(this.gallery_path + pictures[i]);
         image_container = Ti.UI.createImageView({
           height:'100',
           width:'100',
           image:file.nativePath
         });
-        vertical_view.add(image_container);
+        horizontal_view.add(image_container);
         this.colons_num++;
       }
       else if (i == 0) {
@@ -77,18 +79,34 @@ var Gallery = (function(){
           width:'100',
           image:file.nativePath
         });
-        //Ti.API.info('path del cazzo: ');
-        vertical_view.add(image_container);
+        horizontal_view.add(image_container);
         this.colons_num++;
       }
       else {
         //va aggiunta quella in posizione i per il quale i%3 == 0
         //this.gallery_view.add(vertical_view);
+        row.push(horizontal_view);
+        horizontal_view = Ti.UI.createScrollView({
+          width:Ti.UI.FILL,
+          height:'100',
+          layout:'horizontal'
+        });
+        file = Ti.Filesystem.getFile(this.gallery_path + pictures[i]);
+        Ti.API.info('Entro qui! ' + pictures[i]);
+        image_container = Ti.UI.createImageView({
+          height:'100',
+          width:'100',
+          image:file.nativePath
+        });
+        horizontal_view.add(image_container);
         this.rows_num++;
       }
     }
-    this.gallery_view.add(vertical_view);
-    Ti.API.info('Allah! ' + vertical_view.children + " window: " + this.gallery_window);
+    for (var i = 0; i < row.length; i++) {
+      this.gallery_view.add(row[i]);
+    }
+    //this.gallery_view.add(horizontal_view);
+    Ti.API.info('Allah! ' + horizontal_view.children + " window: " + this.gallery_window);
     //this.gallery_window.add(this.gallery_view);
     Ti.API.info('mah: ' + this.gallery_window.children);
   };
